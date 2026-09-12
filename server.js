@@ -1,26 +1,30 @@
 const express = require("express");
+const OpenAI = require("openai");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 app.use(express.json());
 
 app.post("/chat", async (req, res) => {
   try {
-    const message = req.body.message;
-
-    if (!message) {
-      return res.status(400).json({ error: "Message is required" });
-    }
-
-    // এখানে পরে AI API যুক্ত করা হবে
-    res.json({
-      reply: "তোমার মেসেজ পাওয়া গেছে: " + message
+    const response = await client.responses.create({
+      model: "gpt-5-mini",
+      input: req.body.message
     });
 
+    res.json({
+      reply: response.output_text
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({
+      error: "AI response failed"
+    });
   }
 });
 
